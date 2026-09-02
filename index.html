@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lingel · Offer Upload</title>
+<style>
+  :root{
+    --bg:#0e0f0d; --panel:#171a16; --panel2:#1e221c; --line:#2c322a;
+    --ink:#f4f6ef; --muted:#9aa392; --accent:#e2f14d; --accent-dim:#b7c53f;
+    --red:#e2483d; --ok:#63d97a; --blue:#7ec8ff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Archivo',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+  header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#12140f,#0e0f0d);
+    border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .logo{width:34px;height:34px;border-radius:8px;background:var(--accent);color:#12140f;
+    display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+  .htxt{line-height:1.05}
+  .htxt b{font-size:16px;letter-spacing:.2px}
+  .htxt span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+  .gear{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    width:38px;height:38px;border-radius:10px;font-size:17px}
+  .wrap{max-width:600px;margin:0 auto;padding:22px 16px}
+
+  /* hero upload */
+  .drop{display:block;border:1.5px dashed var(--line);border-radius:20px;background:var(--panel);
+    padding:44px 20px;text-align:center;color:var(--muted);transition:border-color .15s,background .15s}
+  .drop:active{background:var(--panel2)}
+  .drop .ic{width:60px;height:60px;border-radius:16px;background:var(--accent);color:#12140f;
+    display:grid;place-items:center;font-size:30px;margin:0 auto 16px;font-weight:800}
+  .drop b{color:var(--ink);display:block;font-size:19px;margin-bottom:6px}
+  .drop small{font-size:12.5px;line-height:1.6}
+  input[type=file]{display:none}
+
+  .status{margin-top:16px;display:none}
+  .status.show{display:block}
+  .summary{border:1px solid var(--line);border-radius:12px;background:var(--panel2);
+    padding:11px 13px;font-size:13px;color:var(--muted);margin-bottom:12px}
+  .summary b{color:var(--ink)}
+  .summary .spin{margin-right:7px;vertical-align:-1px}
+
+  .job{border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    padding:12px 13px;margin-bottom:9px}
+  .jhead{display:flex;align-items:center;gap:9px;font-size:13.5px}
+  .jhead .tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--panel2);
+    color:var(--muted);flex:none;min-width:44px;text-align:center}
+  .jhead .tag.q{color:var(--accent)} .jhead .tag.c{color:var(--blue)}
+  .jhead .fn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .jbody{font-size:12.5px;margin-top:8px;color:var(--muted);line-height:1.5}
+  .jbody.ok{color:var(--ink)}
+  .jbody .where{color:var(--muted);word-break:break-all}
+  .jbody b{color:var(--ink)}
+  .jbody a{font-weight:700}
+  .jbody.doneline{color:var(--ok)}
+  .jbody.failline{color:var(--red)}
+
+  .askrow{display:flex;gap:8px;margin-top:8px}
+  .askrow input{flex:1;background:var(--panel2);border:1px solid var(--accent-dim);color:var(--ink);
+    border-radius:9px;padding:10px;font-size:14px}
+  .askrow button{border:none;border-radius:9px;padding:0 16px;font-weight:800;font-size:13px;
+    background:var(--accent);color:#12140f}
+  .mini{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:600;margin-top:8px}
+
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .btn{width:100%;border:none;border-radius:11px;padding:13px;font-weight:800;font-size:14px;
+    background:var(--accent);color:#12140f;margin-top:6px}
+  .btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:600}
+
+  .recent{margin-top:22px}
+  .recent h4{font-size:12px;color:var(--muted);font-weight:600;margin:0 0 4px}
+  .ri{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+  .ri .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--panel);flex:none}
+  .ri .tag.q{color:var(--accent)} .ri .tag.c{color:var(--blue)}
+  .ri .nm{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ri a{margin-left:auto;flex:none;font-size:12px}
+
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:40}
+  .modal.show{display:flex}
+  .sheet{background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;
+    width:100%;max-width:600px;margin:0 auto;padding:20px 16px 30px}
+  .sheet h3{margin:0 0 4px;font-size:16px}
+  .sheet p{color:var(--muted);font-size:12.5px;margin:0 0 16px;line-height:1.5}
+  .sheet label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .sheet input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:12px;font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">L</div>
+  <div class="htxt"><b>Offer Upload</b><span>Lingel Field Tools</span></div>
+  <button class="gear" id="gear" title="Settings">⚙</button>
+</header>
+
+<div class="wrap">
+  <label class="drop" id="drop" for="file">
+    <div class="ic">↑</div>
+    <b>Upload files</b>
+    <small>Pick one or more no-price quotations or AutoCAD drawings.<br>The app reads each offer number and files it for you.</small>
+  </label>
+  <input type="file" id="file" multiple accept=".pdf,.dwg,.dxf,.zip,application/pdf,application/acad,image/vnd.dwg,application/dxf">
+
+  <div class="status" id="status">
+    <div class="summary" id="summary"></div>
+    <div id="jobs"></div>
+    <button class="btn ghost" id="again" style="display:none">Upload more files</button>
+  </div>
+
+  <div class="recent" id="recentCard" style="display:none">
+    <h4>Recent uploads (this device)</h4>
+    <div id="recent"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h3>Settings</h3>
+    <p>Paste the web-app URL from your deployed Apps Script (ends in <span class="mono">/exec</span>).</p>
+    <label>Apps Script URL</label>
+    <input type="text" id="apiInput" class="mono" placeholder="https://script.google.com/macros/s/…/exec">
+    <button class="btn" id="saveApi">Save</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const LS_API='lingel_offer_api', LS_REC='lingel_offer_recent';
+let jobs=[], seq=0;
+
+const api=()=>localStorage.getItem(LS_API)||'';
+const slug=o=>(o||'').trim().replace(/[\/\\\s]+/g,'_').replace(/[^\w\-]/g,'');
+const baseOf=o=>{ const m=(o||'').match(/(\d{3,7})/); return m?m[1]:''; };
+const ext=f=>(f.name.split('.').pop()||'').toLowerCase();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- settings ---- */
+function openSettings(){ $('apiInput').value=api(); $('modal').classList.add('show'); }
+$('gear').onclick=openSettings;
+$('modal').onclick=e=>{ if(e.target===$('modal')) $('modal').classList.remove('show'); };
+$('saveApi').onclick=()=>{ const v=$('apiInput').value.trim();
+  if(v && !/\/exec$/.test(v)){ alert('That URL should end in /exec'); return; }
+  localStorage.setItem(LS_API,v); $('modal').classList.remove('show'); };
+
+/* ---- base64 ---- */
+function toB64(file){ return new Promise((res,rej)=>{ const r=new FileReader();
+  r.onload=()=>{ const s=r.result; res(s.slice(s.indexOf(',')+1)); };
+  r.onerror=()=>rej(new Error('Could not read file')); r.readAsDataURL(file); }); }
+
+/* ---- pdf.js (lazy) ---- */
+let pdfjsReady=null;
+function loadPdfJs(){ if(pdfjsReady) return pdfjsReady;
+  pdfjsReady=new Promise((res,rej)=>{ const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=()=>{ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(); };
+    s.onerror=()=>rej(new Error('pdf.js failed to load (need internet)')); document.head.appendChild(s); });
+  return pdfjsReady; }
+async function pdfText(file){ await loadPdfJs();
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let t='';
+  for(let p=1;p<=Math.min(2,pdf.numPages);p++){ const pg=await pdf.getPage(p);
+    const tc=await pg.getTextContent(); t+=' '+tc.items.map(i=>i.str).join(' '); }
+  return t; }
+
+function offerFromText(t){
+  let m=t.match(/Quotation[^0-9]{0,25}?(\d{3,7})\s*\/\s*(\d{1,4})/i);
+  if(!m) m=t.match(/\b(\d{4,7})\s*\/\s*(\d{1,4})\b/);
+  return m ? m[1]+'/'+m[2] : ''; }
+function offerFromName(name){
+  const base=name.replace(/\.[^.]+$/,'');
+  let m=base.match(/(\d{4,7})[\s\-_.\/]+(\d{1,3})(?!\d)/);
+  if(m) return m[1]+'/'+m[2];
+  m=base.match(/(\d{4,7})/); return m ? m[1] : ''; }
+function looksQuotation(t){ return /Quotation\s*[-–]?\s*Nr/i.test(t) || /Viewed from Inside/i.test(t); }
+
+/* ---- file pick ---- */
+$('file').onchange=e=>{ const fs=[...e.target.files]; e.target.value=''; if(fs.length) runBatch(fs); };
+
+async function runBatch(files){
+  if(!api()){ openSettings(); return; }
+  jobs = files.map(f=>({ id:++seq, file:f, kind:null, sub:null, offer:'', base:'',
+    name:'', mime:f.type||'application/octet-stream', state:'queue', url:'', error:'' }));
+  $('again').style.display='none';
+  $('status').classList.add('show'); $('drop').style.display='none';
+  renderAll(); updateSummary();
+
+  for(const job of jobs){ await processOne(job); }
+  $('again').style.display=''; updateSummary();
+}
+
+function renderAll(){
+  $('jobs').innerHTML = jobs.map(j=>
+    `<div class="job" id="job-${j.id}">
+       <div class="jhead" id="head-${j.id}"><span class="tag">…</span><span class="fn">${esc(j.file.name)}</span></div>
+       <div class="jbody" id="body-${j.id}">Waiting…</div>
+     </div>`).join('');
+  jobs.forEach(updateRow);
+}
+
+function updateRow(job){
+  const head=$('head-'+job.id); if(!head) return;
+  const tag=head.querySelector('.tag');
+  tag.className='tag '+(job.kind==='quotation'?'q':job.kind==='drawing'?'c':'');
+  tag.textContent = job.kind==='quotation'?'QUOTE':job.kind==='drawing'?'CAD':'…';
+
+  const b=$('body-'+job.id); b.className='jbody';
+  if(job.state==='queue'){ b.textContent='Waiting…'; }
+  else if(job.state==='read'){ b.innerHTML='<span class="spin"></span> Reading file…'; }
+  else if(job.state==='upload'){ b.innerHTML='<span class="spin"></span> Uploading · offer <b>'+esc(job.offer)+'</b>'; }
+  else if(job.state==='done'){ b.className='jbody doneline';
+    b.innerHTML='✓ '+esc(job.base)+' ▸ '+esc(job.sub)+' · <a href="'+job.url+'" target="_blank">Open ▸</a>'; }
+  else if(job.state==='fail'){ b.className='jbody failline';
+    b.innerHTML='Upload failed — '+esc(job.error);
+    const btn=document.createElement('button'); btn.className='mini'; btn.textContent='Retry';
+    btn.onclick=()=>uploadOne(job); b.appendChild(document.createElement('br')); b.appendChild(btn); }
+  else if(job.state==='ask'){
+    b.innerHTML='No offer number found — enter it:';
+    const row=document.createElement('div'); row.className='askrow';
+    const inp=document.createElement('input'); inp.className='mono'; inp.placeholder='e.g. 75057/14';
+    const go=document.createElement('button'); go.textContent='Go';
+    const submit=()=>{ const v=inp.value.trim(); if(!baseOf(v)){ inp.focus(); return; }
+      applyOffer(job,v); uploadOne(job); };
+    go.onclick=submit; inp.addEventListener('keydown',e=>{ if(e.key==='Enter') submit(); });
+    row.appendChild(inp); row.appendChild(go); b.appendChild(row);
+  }
+}
+
+function applyOffer(job,offer){
+  job.offer=offer; job.base=baseOf(offer);
+  job.name = job.kind==='quotation'
+    ? slug(offer)+'_no_price_quotation.pdf'
+    : slug(offer)+'_autocad.'+(ext(job.file)||'dat');
+}
+
+async function processOne(job){
+  job.state='read'; updateRow(job);
+  const e=ext(job.file);
+  const isPdf = e==='pdf' || job.file.type==='application/pdf';
+  let offer='';
+  try{
+    if(isPdf){
+      const t=await pdfText(job.file);
+      if(looksQuotation(t)){ job.kind='quotation'; job.sub='No Price Quotation'; offer=offerFromText(t); }
+      else { job.kind='drawing'; job.sub='AutoCAD'; offer=offerFromName(job.file.name); }
+    } else { job.kind='drawing'; job.sub='AutoCAD'; offer=offerFromName(job.file.name); }
+  }catch(err){ job.kind='drawing'; job.sub='AutoCAD'; offer=offerFromName(job.file.name); }
+
+  if(!offer){ job.state='ask'; updateRow(job); return; }   // non-blocking: leave for the user, move on
+  applyOffer(job,offer);
+  await uploadOne(job);
+}
+
+async function uploadOne(job){
+  job.state='upload'; job.error=''; updateRow(job); updateSummary();
+  try{
+    const data=await toB64(job.file);
+    const body=new URLSearchParams({action:'upload',base:job.base,sub:job.sub,
+      name:job.name,mime:job.mime,data});
+    const r=await fetch(api(),{method:'POST',body});
+    const txt=await r.text(); let j;
+    try{ j=JSON.parse(txt); }catch(_){ throw new Error('Server did not return JSON — check the URL / deploy for "Anyone".'); }
+    if(!j.ok) throw new Error(j.error||'Upload failed');
+    job.state='done'; job.url=j.url; updateRow(job);
+    pushRecent({role:job.kind==='quotation'?'q':'c',name:job.name,url:j.url});
+  }catch(err){ job.state='fail'; job.error=err.message; updateRow(job); }
+  updateSummary();
+}
+
+function updateSummary(){
+  const done=jobs.filter(j=>j.state==='done').length;
+  const ask =jobs.filter(j=>j.state==='ask').length;
+  const fail=jobs.filter(j=>j.state==='fail').length;
+  const busy=jobs.filter(j=>j.state==='read'||j.state==='upload'||j.state==='queue').length;
+  let s='';
+  if(busy) s='<span class="spin"></span> Processing — <b>'+done+'</b> of '+jobs.length+' done';
+  else{ s='<b>'+done+'</b> uploaded';
+    if(ask) s+=' · <b>'+ask+'</b> need a number';
+    if(fail) s+=' · <b>'+fail+'</b> failed'; }
+  $('summary').innerHTML=s;
+}
+
+$('again').onclick=()=>{ $('status').classList.remove('show'); $('drop').style.display='';
+  $('jobs').innerHTML=''; jobs=[]; };
+
+/* ---- recent ---- */
+function pushRecent(rec){ const all=JSON.parse(localStorage.getItem(LS_REC)||'[]');
+  all.unshift(rec); localStorage.setItem(LS_REC,JSON.stringify(all.slice(0,30))); renderRecent(); }
+function renderRecent(){ const all=JSON.parse(localStorage.getItem(LS_REC)||'[]');
+  if(!all.length) return; $('recentCard').style.display='';
+  $('recent').innerHTML=all.map(x=>'<div class="ri"><span class="tag '+x.role+'">'+(x.role==='q'?'QUOTE':'CAD')+
+    '</span><span class="nm">'+esc(x.name)+'</span><a href="'+x.url+'" target="_blank">Open ▸</a></div>').join(''); }
+
+renderRecent();
+if(!api()) openSettings();
+</script>
+</body>
+</html>
