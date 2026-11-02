@@ -174,6 +174,8 @@ async function pdfText(file){ await loadPdfJs();
 
 function offerFromText(t){
   let m=t.match(/Quotation[^0-9]{0,25}?(\d{3,7})\s*\/\s*(\d{1,4})/i);
+  if(!m) m=t.match(/Offer\s*Nr[\s\S]{0,300}?\b(\d{4,7})\s*\/\s*(\d{1,4})\b/i);   // "Offer Nr. … ::: 83852/3"
+  if(!m) m=t.match(/^\s*(\d{4,7})\s*-\s*(\d{1,4})\b/);                                // page header "83852-3" 
   if(!m) m=t.match(/\b(\d{4,7})\s*\/\s*(\d{1,4})\b/);
   return m ? m[1]+'/'+m[2] : ''; }
 function offerFromName(name){
@@ -183,7 +185,12 @@ function offerFromName(name){
   m=base.match(/(\d{4,7})/); return m ? m[1] : ''; }
 function looksProduction(t){ return /Order-Pos\.?\s*:/i.test(t) || /Dokument-Nr\.?\s*:/i.test(t); }
 function offerFromProduction(t){ const m=t.match(/Dokument-Nr\.?\s*:\s*(\d{3,7})\s*\/\s*(\d{1,4})/i); return m ? m[1]+'/'+m[2] : ''; }
-function looksQuotation(t){ return /Quotation\s*[-–]?\s*Nr/i.test(t) || /Viewed from Inside/i.test(t); }
+/* A Lingel quotation: the old layout says "Quotation-Nr.", the current no-price layout says "Quotation" + "Offer Nr."
+   (that layout was being filed as AutoCAD). Drawings say "Offer No." / "Pos. No." and never "Offer Nr." or "Quotation". */
+function looksQuotation(t){
+  return /Quotation\s*[-–]?\s*Nr/i.test(t) || /Viewed from Inside/i.test(t)
+      || /Offer\s*[-–]?\s*Nr\b/i.test(t)
+      || (/\bQuotation\b/i.test(t) && /(Position\s+Measure|We hope the offer meets)/i.test(t)); }
 
 /* ---- file pick ---- */
 $('file').onchange=e=>{ const fs=[...e.target.files]; e.target.value=''; if(fs.length) runBatch(fs); };
